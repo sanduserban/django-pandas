@@ -41,6 +41,13 @@ class CandidateViewSet(DestroyModelMixin, ListModelMixin, RetrieveModelMixin, Up
     def average(self, request):
         group = request.GET.get('group')
         average = request.GET.get('average')
+        model_fields = [f.name for f in Candidate._meta.get_fields()]
+        model_fields.append('age')
+        if group not in model_fields or average not in model_fields:
+            return Response(
+                data={'message': f'Invalid fields. Please use one of the following: {model_fields}'},
+                status=400
+            )
         serializer = self.get_serializer(self.queryset, many=True)
         dataframe = pandas.DataFrame(serializer.data)
         average = dataframe.groupby(group)[average].mean()
